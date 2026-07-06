@@ -1,0 +1,389 @@
+<title>消費税 有利不利シミュレーター</title>
+<style>
+  :root{
+    --bg:#eef1f6;
+    --surface:#ffffff;
+    --surface-2:#f5f7fa;
+    --border:#e5e8f0;
+    --border-strong:#d7dbe6;
+    --text:#1b2233;
+    --text-muted:#5c6478;
+    --text-faint:#8b93a6;
+    --accent:#4f46e5;
+    --accent-weak:#eef0fe;
+    --accent-strong:#3730a3;
+    --good:#0a8f5f;
+    --good-weak:#e6f5ee;
+    --star:#c77800;
+    --star-weak:#fdf3e0;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+    --shadow-lg:0 12px 30px -8px rgba(50,42,140,.18),0 2px 6px rgba(16,24,40,.06);
+    --radius:20px;
+    --radius-sm:12px;
+    --font:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic","YuGothic","Meiryo",system-ui,-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0e1119;
+      --surface:#171b26;
+      --surface-2:#1e2331;
+      --border:#2a3040;
+      --border-strong:#39415a;
+      --text:#e8eaf1;
+      --text-muted:#a3abbf;
+      --text-faint:#727b91;
+      --accent:#8b85f5;
+      --accent-weak:#20223a;
+      --accent-strong:#b4afff;
+      --good:#37c98d;
+      --good-weak:#132a22;
+      --star:#e6a53a;
+      --star-weak:#2b2413;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+      --shadow-lg:0 14px 34px -8px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1f6;--surface:#ffffff;--surface-2:#f5f7fa;--border:#e5e8f0;--border-strong:#d7dbe6;
+    --text:#1b2233;--text-muted:#5c6478;--text-faint:#8b93a6;--accent:#4f46e5;--accent-weak:#eef0fe;
+    --accent-strong:#3730a3;--good:#0a8f5f;--good-weak:#e6f5ee;--star:#c77800;--star-weak:#fdf3e0;
+    --shadow-lg:0 12px 30px -8px rgba(50,42,140,.18),0 2px 6px rgba(16,24,40,.06);
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1119;--surface:#171b26;--surface-2:#1e2331;--border:#2a3040;--border-strong:#39415a;
+    --text:#e8eaf1;--text-muted:#a3abbf;--text-faint:#727b91;--accent:#8b85f5;--accent-weak:#20223a;
+    --accent-strong:#b4afff;--good:#37c98d;--good-weak:#132a22;--star:#e6a53a;--star-weak:#2b2413;
+    --shadow-lg:0 14px 34px -8px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);font-family:var(--font);
+    -webkit-font-smoothing:antialiased;line-height:1.6;
+    padding:40px 18px 56px;min-height:100vh;
+  }
+  .wrap{max-width:960px;margin:0 auto}
+
+  /* header */
+  .head{text-align:center;margin-bottom:34px}
+  .eyebrow{
+    display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.14em;
+    color:var(--accent);background:var(--accent-weak);padding:5px 12px;border-radius:999px;margin-bottom:14px;
+  }
+  .head h1{
+    font-size:clamp(1.5rem,4.2vw,2.15rem);font-weight:800;letter-spacing:.01em;
+    margin:0 0 10px;text-wrap:balance;line-height:1.3;
+  }
+  .head p{margin:0;color:var(--text-muted);font-size:.98rem}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:22px}
+  @media (min-width:860px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+
+  .panel{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow-sm);padding:26px 24px;
+  }
+  .panel-title{
+    display:flex;align-items:center;gap:9px;font-size:1.02rem;font-weight:700;color:var(--text);
+    padding-bottom:14px;margin:0 0 20px;border-bottom:1px solid var(--border);
+  }
+  .panel-title svg{width:19px;height:19px;color:var(--accent);flex:none}
+
+  .field{margin-bottom:18px}
+  .field:last-child{margin-bottom:0}
+  label.lab{display:block;font-size:.83rem;font-weight:700;color:var(--text);margin-bottom:7px}
+  label.lab .hint{font-weight:500;color:var(--text-faint)}
+  .control{position:relative}
+  input[type=text],select{
+    width:100%;font-family:inherit;font-size:1rem;color:var(--text);
+    background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+    padding:12px 14px;outline:none;transition:border-color .15s,box-shadow .15s,background .15s;
+  }
+  input[type=text]{font-size:1.12rem;font-weight:600;font-variant-numeric:tabular-nums;padding-right:38px}
+  select{appearance:none;-webkit-appearance:none;padding-right:40px;font-weight:600;cursor:pointer}
+  input[type=text]:focus,select:focus{
+    border-color:var(--accent);background:var(--surface);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent);
+  }
+  .suffix{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-faint);font-size:.92rem;font-weight:600;pointer-events:none}
+  .chev{position:absolute;right:13px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-faint);pointer-events:none}
+
+  .subgroup{margin-top:20px;padding-top:18px;border-top:1px dashed var(--border-strong)}
+  .subgroup h3{font-size:.82rem;font-weight:700;color:var(--text-muted);margin:0 0 14px;letter-spacing:.02em}
+
+  /* checkbox */
+  .check{display:flex;gap:11px;align-items:flex-start;cursor:pointer;margin-top:20px;padding-top:18px;border-top:1px dashed var(--border-strong)}
+  .check input{width:19px;height:19px;margin:2px 0 0;accent-color:var(--accent);flex:none;cursor:pointer}
+  .check .ctitle{font-weight:700;font-size:.92rem}
+  .check .cdesc{font-size:.76rem;color:var(--text-faint);margin-top:4px;line-height:1.55}
+
+  /* results */
+  .results{display:flex;flex-direction:column;gap:14px}
+  .result-card{
+    position:relative;background:var(--surface-2);border:1.5px solid transparent;border-radius:16px;
+    padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:14px;
+    transition:transform .25s cubic-bezier(.4,0,.2,1),border-color .25s,background .25s,box-shadow .25s;
+  }
+  .result-card.best{
+    border-color:var(--accent);background:var(--accent-weak);
+    transform:scale(1.025);box-shadow:var(--shadow-lg);z-index:1;
+  }
+  .result-card.dimmed{opacity:.5}
+  .rc-name{font-weight:700;font-size:1.02rem;margin:0}
+  .rc-sub{font-size:.74rem;color:var(--text-faint);margin:3px 0 0}
+  .rc-right{text-align:right;white-space:nowrap;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+  .rc-val{font-size:1.85rem;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1}
+  .rc-val.muted{color:var(--text-faint);font-size:1.15rem}
+  .rc-val.refund{color:var(--good)}
+  .rc-unit{font-size:.9rem;color:var(--text-muted);font-weight:600;margin-left:2px}
+  .badge{
+    position:absolute;top:-11px;right:-8px;background:var(--star);color:#fff;
+    font-size:.7rem;font-weight:800;letter-spacing:.02em;padding:5px 11px;border-radius:999px;
+    box-shadow:0 4px 10px -2px color-mix(in srgb,var(--star) 55%,transparent);
+  }
+  :root[data-theme="dark"] .badge,@media (prefers-color-scheme:dark){.badge{color:#1a1204}}
+  .refund-tag{font-size:.7rem;font-weight:700;color:var(--good);background:var(--good-weak);padding:2px 8px;border-radius:6px}
+
+  .advice{margin-top:22px;background:var(--accent-weak);border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);border-radius:16px;padding:18px 18px}
+  .advice h4{display:flex;align-items:center;gap:7px;font-size:.83rem;font-weight:700;color:var(--accent-strong);margin:0 0 8px}
+  .advice h4 svg{width:16px;height:16px}
+  .advice p{margin:0;font-size:.86rem;color:var(--text);line-height:1.7}
+  .advice strong{color:var(--accent-strong)}
+  .advice .fine{font-size:.76rem;color:var(--text-muted)}
+
+  .disclaimer{max-width:720px;margin:34px auto 0;padding-top:20px;border-top:1px solid var(--border);
+    font-size:.74rem;color:var(--text-faint);line-height:1.75;text-align:center;display:flex;flex-direction:column;gap:6px}
+  .foot{text-align:center;margin-top:26px;font-size:.78rem;color:var(--text-faint);font-weight:600;letter-spacing:.03em}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <span class="eyebrow">CONSUMPTION TAX SIMULATOR</span>
+    <h1>消費税 有利不利シミュレーター</h1>
+    <p>「2割特例」「簡易課税」「本則課税」のどれが最もお得か、その場で計算します</p>
+  </div>
+
+  <div class="grid">
+    <!-- 入力 -->
+    <section class="panel">
+      <h2 class="panel-title">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        入力条件
+      </h2>
+
+      <div class="field">
+        <label class="lab" for="closing_month">決算月 <span class="hint">（個人事業主は12月）</span></label>
+        <div class="control">
+          <select id="closing_month" onchange="calculate()">
+            <option value="1">1月</option><option value="2">2月</option><option value="3" selected>3月</option>
+            <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+            <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+            <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+          </select>
+          <svg class="chev" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="lab" for="sales">課税売上高 <span class="hint">（税込・年間）</span></label>
+        <div class="control">
+          <input type="text" id="sales" value="22,000,000" inputmode="numeric" placeholder="例: 22,000,000" oninput="formatInput(this)">
+          <span class="suffix">円</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="lab" for="category">主な業種 <span class="hint">（簡易課税用）</span></label>
+        <div class="control">
+          <select id="category" onchange="calculate()">
+            <option value="0.9">第1種：卸売業（みなし仕入率90%）</option>
+            <option value="0.8">第2種：小売業等（みなし仕入率80%）</option>
+            <option value="0.7">第3種：製造業・建設業等（みなし仕入率70%）</option>
+            <option value="0.6">第4種：飲食店業等（みなし仕入率60%）</option>
+            <option value="0.5" selected>第5種：サービス業等（みなし仕入率50%）</option>
+            <option value="0.4">第6種：不動産業（みなし仕入率40%）</option>
+          </select>
+          <svg class="chev" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+        </div>
+      </div>
+
+      <div class="subgroup">
+        <h3>仕入・経費の入力（本則課税計算用）</h3>
+        <div class="field">
+          <label class="lab" for="purchase_invoice" style="font-weight:500">インボイス登録事業者からの仕入（税込）</label>
+          <div class="control">
+            <input type="text" id="purchase_invoice" value="3,300,000" inputmode="numeric" placeholder="例: 3,300,000" oninput="formatInput(this)">
+            <span class="suffix">円</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lab" for="purchase_tax_free" style="font-weight:500">免税事業者からの仕入（税込）</label>
+          <div class="control">
+            <input type="text" id="purchase_tax_free" value="1,100,000" inputmode="numeric" placeholder="例: 1,100,000" oninput="formatInput(this)">
+            <span class="suffix">円</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lab" for="transition_rate" style="font-weight:500">免税事業者からの仕入控除割合</label>
+          <div class="control">
+            <select id="transition_rate" onchange="calculate()">
+              <option value="0.8">80%控除（〜2026年9月まで）</option>
+              <option value="0.7" selected>70%控除（2026年10月〜2028年9月）</option>
+              <option value="0.5">50%控除（2028年10月〜2031年9月）</option>
+              <option value="0.0">控除なし（2031年10月以降）</option>
+            </select>
+            <svg class="chev" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <label class="check" for="is_2wari_eligible">
+        <input type="checkbox" id="is_2wari_eligible" checked onchange="calculate()">
+        <span>
+          <span class="ctitle">2割特例の対象要件を満たす</span>
+          <span class="cdesc">免税事業者からインボイス発行事業者になり、基準期間の売上が1000万円以下などの要件を満たす場合。※2026年9月末で多くの場合終了となりますのでご注意ください。</span>
+        </span>
+      </label>
+    </section>
+
+    <!-- 結果 -->
+    <section class="panel" style="display:flex;flex-direction:column">
+      <h2 class="panel-title">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        シミュレーション結果
+      </h2>
+
+      <div class="results">
+        <div id="result_2wari" class="result-card">
+          <div id="badge_2wari" class="badge" hidden>★ 最も有利</div>
+          <div><p class="rc-name">2割特例</p><p class="rc-sub">売上税額の20%を納付</p></div>
+          <div class="rc-right"><div><span id="tax_2wari_val" class="rc-val">0</span><span class="rc-unit">円</span></div></div>
+        </div>
+
+        <div id="result_kani" class="result-card">
+          <div id="badge_kani" class="badge" hidden>★ 最も有利</div>
+          <div><p class="rc-name">簡易課税</p><p class="rc-sub">業種別のみなし仕入率で計算</p></div>
+          <div class="rc-right"><div><span id="tax_kani_val" class="rc-val">0</span><span class="rc-unit">円</span></div></div>
+        </div>
+
+        <div id="result_honsoku" class="result-card">
+          <div id="badge_honsoku" class="badge" hidden>★ 最も有利</div>
+          <div><p class="rc-name">本則課税</p><p class="rc-sub">実際の仕入・経費から実額計算</p></div>
+          <div class="rc-right">
+            <div><span id="tax_honsoku_val" class="rc-val">0</span><span class="rc-unit">円</span></div>
+            <span id="honsoku_note" class="refund-tag" hidden>還付金が発生します</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="advice">
+        <h4>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          ワンポイントアドバイス
+        </h4>
+        <p id="advice_text">数値を入力してシミュレーションを開始してください。</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="disclaimer">
+    <p>※ 本シミュレーションは目安（消費税率10%一律での簡易計算）であり、端数処理等により実際の納税額とは異なります。</p>
+    <p>※ 簡易課税制度を選択するには、原則として適用を受けようとする課税期間の開始の日の前日までに「消費税簡易課税制度選択届出書」を税務署に提出する必要があり、2年間は継続適用が義務付けられます。</p>
+    <p>※ 最終的な有利・不利の判定や各種届出書の提出については、必ず顧問税理士等の専門家にご相談のうえご判断ください。</p>
+  </div>
+  <div class="foot">宇土公認会計士・税理士事務所</div>
+</div>
+
+<script>
+  function formatInput(input){
+    let value=input.value.replace(/,/g,'');
+    if(value===''){calculate();return;}
+    value=value.replace(/[^0-9]/g,'');
+    input.value=value!==''?parseInt(value,10).toLocaleString('ja-JP'):'';
+    calculate();
+  }
+  function parseNumber(str){if(!str)return 0;return parseInt(str.replace(/,/g,''),10)||0;}
+
+  function calculate(){
+    const salesInput=document.getElementById('sales').value;
+    if(!salesInput){resetResults();return;}
+    const closingMonth=document.getElementById('closing_month').value;
+    const sales=parseNumber(salesInput);
+    const category=parseFloat(document.getElementById('category').value);
+    const purchaseInvoice=parseNumber(document.getElementById('purchase_invoice').value);
+    const purchaseTaxFree=parseNumber(document.getElementById('purchase_tax_free').value);
+    const transitionRate=parseFloat(document.getElementById('transition_rate').value);
+    const is2wariEligible=document.getElementById('is_2wari_eligible').checked;
+
+    const taxRate=10/110;
+    const taxOut=sales*taxRate;                 // 預かった消費税
+    let tax2wari=is2wariEligible?taxOut*0.2:null;
+    const taxKani=taxOut*(1-category);
+    const taxIn1=purchaseInvoice*taxRate;
+    const taxIn2=purchaseTaxFree*taxRate*transitionRate;
+    const taxHonsoku=taxOut-(taxIn1+taxIn2);
+
+    updateUI(tax2wari,taxKani,taxHonsoku,closingMonth);
+  }
+
+  function updateUI(tax2wari,taxKani,taxHonsoku,closingMonth){
+    const fmt=v=>Math.floor(Math.abs(v)).toLocaleString('ja-JP');
+    const el2=document.getElementById('tax_2wari_val');
+    const elK=document.getElementById('tax_kani_val');
+    const elH=document.getElementById('tax_honsoku_val');
+    const box2=document.getElementById('result_2wari');
+    const boxK=document.getElementById('result_kani');
+    const boxH=document.getElementById('result_honsoku');
+    const bd2=document.getElementById('badge_2wari');
+    const bdK=document.getElementById('badge_kani');
+    const bdH=document.getElementById('badge_honsoku');
+    const note=document.getElementById('honsoku_note');
+    const advice=document.getElementById('advice_text');
+
+    box2.className=boxK.className=boxH.className='result-card';
+    bd2.hidden=bdK.hidden=bdH.hidden=note.hidden=true;
+    el2.className=elK.className=elH.className='rc-val';
+
+    if(tax2wari!==null){el2.textContent=fmt(tax2wari);}
+    else{el2.textContent='対象外';el2.classList.add('muted');box2.classList.add('dimmed');}
+    elK.textContent=fmt(taxKani);
+    elH.textContent=fmt(taxHonsoku);
+
+    if(taxHonsoku<0){note.hidden=false;elH.classList.add('refund');}
+
+    let minVal=Infinity,best='';
+    if(tax2wari!==null&&tax2wari<minVal){minVal=tax2wari;best='2wari';}
+    if(taxKani<minVal){minVal=taxKani;best='kani';}
+    if(taxHonsoku<minVal){minVal=taxHonsoku;best='honsoku';}
+
+    const kaniDeadline=`次期から簡易課税を適用するには、今期の決算月末（<strong>${closingMonth}月末日</strong>）までに「消費税簡易課税制度選択届出書」を税務署へ提出する必要があります。`;
+
+    if(best==='2wari'){
+      box2.classList.add('best');bd2.hidden=false;
+      advice.innerHTML=`シミュレーションの結果、<strong>「2割特例」</strong>が最も納税額が少なくなります。<br>ただし、2割特例はインボイス制度開始を機に課税事業者となった場合の期間限定の特例です。2026年9月末で多くの場合終了となるため、その後の対策もあわせてご検討ください。<br><br><span class="fine">※ご参考：${kaniDeadline}</span>`;
+    }else if(best==='kani'){
+      boxK.classList.add('best');bdK.hidden=false;
+      advice.innerHTML=`シミュレーションの結果、<strong>「簡易課税」</strong>が最も有利です。<br>${kaniDeadline}また、一度選択すると2年間は継続必須となる点にご注意ください。`;
+    }else if(best==='honsoku'){
+      boxH.classList.add('best');bdH.hidden=false;
+      if(taxHonsoku<0){
+        advice.innerHTML=`シミュレーションの結果、<strong>「本則課税」</strong>による消費税還付が受けられる可能性があり最も有利です。<br>設備投資などで経費が多い年は、実額で計算する本則課税が有利になるケースがあります。<br><br><span class="fine">※ご参考：${kaniDeadline}</span>`;
+      }else{
+        advice.innerHTML=`シミュレーションの結果、<strong>「本則課税」</strong>が最も納税額が少なくなります。<br>仕入や経費に含まれる消費税額が大きいため、実額で控除できる本則課税が有利になっています。インボイスの保存義務がありますのでご留意ください。<br><br><span class="fine">※ご参考：${kaniDeadline}</span>`;
+      }
+    }
+  }
+
+  function resetResults(){
+    ['tax_2wari_val','tax_kani_val','tax_honsoku_val'].forEach(id=>{
+      const e=document.getElementById(id);e.textContent='0';e.className='rc-val';
+    });
+    document.getElementById('advice_text').textContent='数値を入力してシミュレーションを開始してください。';
+    ['result_2wari','result_kani','result_honsoku'].forEach(id=>document.getElementById(id).className='result-card');
+    ['badge_2wari','badge_kani','badge_honsoku','honsoku_note'].forEach(id=>document.getElementById(id).hidden=true);
+  }
+
+  window.onload=calculate;
+</script>
